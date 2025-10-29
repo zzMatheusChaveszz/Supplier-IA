@@ -18,7 +18,7 @@ function createMessage(text, sender) {
   container.classList.add("msg-container", sender);
  
   const img = document.createElement("img");
-  img.src = sender === "bot" ? "img/bot.png" : "img/user.png";
+  img.src = sender === "bot" ? "img/RX9060.png" : "img/user.png";
   img.classList.add("avatar");
  
   const bubble = document.createElement("div");
@@ -160,4 +160,5 @@ function handleSelection(option, context) {
 }
  
 // Inicia o chat
+
 startChat();

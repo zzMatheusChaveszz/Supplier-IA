@@ -37,7 +37,7 @@ function typingAnimation(callback) {
   container.classList.add("msg-container", "bot");
  
   const img = document.createElement("img");
-  img.src = "img/bot.png";
+  img.src = "IMG/bot.png";
   img.classList.add("avatar", "typing-avatar"); // classe para girar
  
   const bubble = document.createElement("div");
@@ -162,4 +162,5 @@ function handleSelection(option, context) {
 // Inicia o chat
 
 startChat();
+
 

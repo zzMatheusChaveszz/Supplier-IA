@@ -1,28 +1,19 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <title>Supplier IA</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="icon" href="IMG/suppliercard.png" type="image/png">
-</head>
-<body class="dark">
- 
-  <!-- Header -->
-  <header>
-    <img src="IMG/suppliercard.png"alt="Logo Bot-fólio" id="logo">
-    <h1 id="LogoIA"><a href="index.html">Supplier <span class="verde">IA</span></a></h1>
-    <button id="themeToggle">🌙</button>
-  </header>
+import pandas as pd
+import openpyxl
 
-  <main id="chat">
-    <!-- Mensagens aparecem aqui dinamicamente -->
-  </main>
+# Abre o arquivo principal
+wb = openpyxl.load_workbook("Base.xlsx")
+ws_base = wb["BASE"]
 
-  <div>
-    <img id="RX580" src="IMG/RX9060.png">
-  </div>
+# Abre o arquivo recebido
+wb2 = openpyxl.load_workbook("OnePage.xlsx")
+ws_new = wb2["BASEDADOS"]
 
-  <script src="script.js"></script>
-</body>
-</html>
+# Lê última linha preenchida da base
+last = ws_base.max_row + 1
+
+# Copia valores da aba recebida (linha 2)
+for col in range(1, ws_base.max_column + 1):
+    ws_base.cell(last, col).value = ws_new.cell(2, col).value
+
+wb.save("Base.xlsx")

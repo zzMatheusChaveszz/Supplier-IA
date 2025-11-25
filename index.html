@@ -1,51 +1,56 @@
-Private Sub txtPesquisa_Exit(ByVal Cancel As MSForms.ReturnBoolean)
+Private Sub txtPesquisa_KeyDown(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As Integer)
 
-    ' Este código só executa quando você clica fora ou aperta ENTER na caixa de texto.
-    
-    Dim TermoPesquisa As String
-    Dim AbaTD As Worksheet
-    Dim TabelaDin As PivotTable
-    Dim CampoFiltro As PivotField
-    Dim Item As PivotItem
+    ' ----------------------------------------------------
+    ' Verifica se a tecla pressionada é a tecla ENTER (Código 13)
+    If KeyCode = 13 Then 
+    ' ----------------------------------------------------
 
-    ' Obtém o valor APENAS no evento Exit
-    TermoPesquisa = LCase(Me.txtPesquisa.Value)
+        Dim TermoPesquisa As String
+        Dim AbaTD As Worksheet
+        Dim TabelaDin As PivotTable
+        Dim CampoFiltro As PivotField
+        Dim Item As PivotItem
 
-    ' *** 1. AJUSTE AQUI: Nome da Planilha onde sua Tabela Dinâmica está ***
-    Set AbaTD = ThisWorkbook.Sheets("NOME_DA_SUA_ABA_TD") ' <-- EX: Sheets("Relatorio")
+        ' Obtém o valor do controle e converte para minúsculas
+        TermoPesquisa = LCase(Me.txtPesquisa.Value)
 
-    ' --- Configurações Fixas ---
-    Set TabelaDin = AbaTD.PivotTables("Tabela Dinâmica1")
-    Set CampoFiltro = TabelaDin.PivotFields("Parceiro")
-    ' --- Fim Configurações Fixas ---
-    
-    ' ----------------------------------------------------------------------------------
-    ' OTIMIZAÇÃO: Desliga a tela, eventos e recalculo (para velocidade)
-    Application.ScreenUpdating = False 
-    TabelaDin.ManualUpdate = True      
-    
-    On Error Resume Next 
+        ' *** 1. AJUSTE AQUI: Nome da Planilha onde sua Tabela Dinâmica está ***
+        Set AbaTD = ThisWorkbook.Sheets("NOME_DA_SUA_ABA_TD") ' <-- EX: Sheets("Relatorio")
 
-    ' 2. Limpa todos os filtros e torna todos os itens visíveis
-    For Each Item In CampoFiltro.PivotItems
-        Item.Visible = True
-    Next Item
+        ' --- Configurações Fixas ---
+        Set TabelaDin = AbaTD.PivotTables("Tabela Dinâmica1")
+        Set CampoFiltro = TabelaDin.PivotFields("Parceiro")
+        ' --- Fim Configurações Fixas ---
+        
+        ' OTIMIZAÇÃO: Desliga a tela e atualização da TD
+        Application.ScreenUpdating = False 
+        TabelaDin.ManualUpdate = True      
+        
+        On Error Resume Next 
 
-    ' 3. Aplica o filtro (Sensível a Maiúsculas/Minúsculas devido ao LCase)
-    If TermoPesquisa <> "" Then 
+        ' 2. Limpa todos os filtros e torna todos os itens visíveis
         For Each Item In CampoFiltro.PivotItems
-            ' Filtra itens cujos nomes (em minúsculas) NÃO CONTÊM o termo de pesquisa
-            If Not LCase(Item.Name) Like "*" & TermoPesquisa & "*" Then
-                Item.Visible = False
-            End If
+            Item.Visible = True
         Next Item
-    End If
-    
-    On Error GoTo 0 
 
-    ' ----------------------------------------------------------------------------------
-    ' LIGA OTIMIZAÇÃO (Força um recálculo rápido)
-    TabelaDin.ManualUpdate = False      
-    Application.ScreenUpdating = True   
-    
+        ' 3. Aplica o filtro (Sensível a Maiúsculas/Minúsculas)
+        If TermoPesquisa <> "" Then 
+            For Each Item In CampoFiltro.PivotItems
+                ' Filtra itens cujos nomes (em minúsculas) NÃO CONTÊM o termo de pesquisa
+                If Not LCase(Item.Name) Like "*" & TermoPesquisa & "*" Then
+                    Item.Visible = False
+                End If
+            Next Item
+        End If
+        
+        On Error GoTo 0 
+
+        ' LIGA OTIMIZAÇÃO
+        TabelaDin.ManualUpdate = False      
+        Application.ScreenUpdating = True
+        
+        ' Cancela o som do Enter
+        KeyCode = 0 
+        
+    End If ' Fim da condição KeyCode = 13
 End Sub

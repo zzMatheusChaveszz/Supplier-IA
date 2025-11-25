@@ -1,1 +1,43 @@
-test
+Private Sub TextBox1_Change()
+
+    Dim TermoPesquisa As String
+    Dim TabelaDin As PivotTable
+    Dim CampoFiltro As PivotField
+    Dim Item As PivotItem
+
+    ' Obtém o texto digitado (o * torna a pesquisa "contém")
+    TermoPesquisa = "*" & Me.TextBox1.Value & "*"
+    
+    ' ----------------------------------------------------
+    ' 1. Defina o nome da sua Tabela Dinâmica (Ex: "RelatórioTD")
+    Set TabelaDin = ActiveSheet.PivotTables("TabelaDinâmica1") ' << AJUSTE
+    
+    ' 2. Defina o nome do Campo de Filtro (o mesmo da Segmentação)
+    Set CampoFiltro = TabelaDin.PivotFields("Nome do Campo da Segmentação") ' << AJUSTE
+    ' ----------------------------------------------------
+
+    Application.ScreenUpdating = False ' Desliga a atualização de tela para evitar piscadas
+    
+    ' 1. Desabilita a exibição de itens para aceleração
+    TabelaDin.ManualUpdate = True
+
+    ' 2. Reseta o filtro em todos os itens, assumindo que eles devem estar visíveis
+    For Each Item In CampoFiltro.PivotItems
+        Item.Visible = True
+    Next Item
+
+    ' 3. Aplica o filtro: Oculta itens que NÃO contêm o termo de pesquisa
+    If Me.TextBox1.Value <> "" Then
+        For Each Item In CampoFiltro.PivotItems
+            ' Se o nome do item NÃO corresponder ao termo (usando Like)
+            If Not Item.Name Like TermoPesquisa Then
+                Item.Visible = False
+            End If
+        Next Item
+    End If
+
+    TabelaDin.ManualUpdate = False ' Habilita novamente
+    Application.ScreenUpdating = True ' Liga a atualização de tela
+
+End Sub
+

@@ -1,58 +1,51 @@
-Private Sub txtPesquisa_Change()
+Private Sub txtPesquisa_Exit(ByVal Cancel As MSForms.ReturnBoolean)
 
+    ' Este código só executa quando você clica fora ou aperta ENTER na caixa de texto.
+    
     Dim TermoPesquisa As String
     Dim AbaTD As Worksheet
     Dim TabelaDin As PivotTable
     Dim CampoFiltro As PivotField
     Dim Item As PivotItem
 
-    ' *** 1. AJUSTE APENAS AQUI: Nome da Planilha onde sua Tabela Dinâmica está ***
-    Set AbaTD = ThisWorkbook.Sheets("NOME_DA_SUA_ABA_TD") ' <-- Ex: Sheets("Relatorio")
+    ' Obtém o valor APENAS no evento Exit
+    TermoPesquisa = LCase(Me.txtPesquisa.Value)
+
+    ' *** 1. AJUSTE AQUI: Nome da Planilha onde sua Tabela Dinâmica está ***
+    Set AbaTD = ThisWorkbook.Sheets("NOME_DA_SUA_ABA_TD") ' <-- EX: Sheets("Relatorio")
 
     ' --- Configurações Fixas ---
-    Set TabelaDin = AbaTD.PivotTables("Tabela Dinâmica1") ' Nome da TD
-    Set CampoFiltro = TabelaDin.PivotFields("Parceiro")     ' Campo de Filtro
+    Set TabelaDin = AbaTD.PivotTables("Tabela Dinâmica1")
+    Set CampoFiltro = TabelaDin.PivotFields("Parceiro")
     ' --- Fim Configurações Fixas ---
     
-    TermoPesquisa = "*" & Me.txtPesquisa.Value & "*"
-    
     ' ----------------------------------------------------------------------------------
-    ' OTIMIZAÇÃO: Desliga a tela, eventos e recalculo.
-    Application.ScreenUpdating = False ' Desliga a atualização visual
-    Application.EnableEvents = False   ' Evita disparar eventos de outras planilhas
-    TabelaDin.ManualUpdate = True      ' Desliga a atualização automática da Tabela Dinâmica
+    ' OTIMIZAÇÃO: Desliga a tela, eventos e recalculo (para velocidade)
+    Application.ScreenUpdating = False 
+    TabelaDin.ManualUpdate = True      
     
     On Error Resume Next 
 
-    ' 2. Limpeza Rápida: Apenas um loop para otimizar
-    ' Filtra itens visíveis APENAS se o valor digitado não for vazio.
-    If Me.txtPesquisa.Value <> "" Then
-        
-        ' 2a. Inicialmente, oculta todos os itens (a não ser que o valor digitado seja vazio)
-        For Each Item In CampoFiltro.PivotItems
-            Item.Visible = False
-        Next Item
+    ' 2. Limpa todos os filtros e torna todos os itens visíveis
+    For Each Item In CampoFiltro.PivotItems
+        Item.Visible = True
+    Next Item
 
-        ' 2b. Torna visível apenas o item exato, ou os que contêm o termo
+    ' 3. Aplica o filtro (Sensível a Maiúsculas/Minúsculas devido ao LCase)
+    If TermoPesquisa <> "" Then 
         For Each Item In CampoFiltro.PivotItems
-            If Item.Name Like TermoPesquisa Then
-                Item.Visible = True
+            ' Filtra itens cujos nomes (em minúsculas) NÃO CONTÊM o termo de pesquisa
+            If Not LCase(Item.Name) Like "*" & TermoPesquisa & "*" Then
+                Item.Visible = False
             End If
-        Next Item
-        
-    Else 
-        ' Se a caixa de pesquisa estiver vazia, torna TODOS visíveis
-        For Each Item In CampoFiltro.PivotItems
-            Item.Visible = True
         Next Item
     End If
     
     On Error GoTo 0 
 
     ' ----------------------------------------------------------------------------------
-    ' FIM DA OTIMIZAÇÃO: Liga a tela, eventos e recalculo.
-    TabelaDin.ManualUpdate = False      ' Liga a atualização da TD (força um único recálculo)
-    Application.EnableEvents = True     ' Liga os eventos
-    Application.ScreenUpdating = True   ' Liga a atualização visual
+    ' LIGA OTIMIZAÇÃO (Força um recálculo rápido)
+    TabelaDin.ManualUpdate = False      
+    Application.ScreenUpdating = True   
     
 End Sub
